@@ -1,0 +1,6 @@
+[{"id":2,"key":"auto-mode-change","value":"0"},
+{"id":3,"key":"auto-alert","value":"0"},
+{"id":4,"key":"after-diagnostics-url","value":"modes.htm"},
+{"id":5,"key":"db-files-path","value":"/home/sensen/db_files"},
+{"id":9,"key":"events-samples-thresholds","value":"ocr-score,1,3.1,1,5#ocr-score,1,2.5,3,7#ocr-filter-score,0.011,0.5,0#geometry-filter-width,90,300,0#geometry-filter-height,10,150,0#track-length,1,30,0#confidence,0.1,2.0,0#ocr-length,4,7,0"},
+{"id":1,"key":"after-login-url","value":"dashboard.htm"}]

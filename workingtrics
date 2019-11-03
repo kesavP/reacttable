@@ -1,0 +1,17 @@
+error:ENOSPC: System limit for number of file watchers reached, watch '/home/foldername/abcrypto/static'
+solution: echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf && sudo sysctl -p
+
+
+react-hot-loader : Doesnt need to refresh the browser, state not lost . its added to babel
+	VERSION  :"react-hot-loader": "^3.0.0-beta.6"
+
+react-s-alert: sAlert is a React component which provides alerts or notifications with rich configuration
+     VERSION :"^1.3.2"
+
+"react-bootstrap": React-Bootstrap replaces the Bootstrap JavaScript
+      VERSION    :"0.31.3",
+
+
+if (module.hot) {
+  module.hot.accept('./app', renderApp);
+}
