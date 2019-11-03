@@ -27,6 +27,13 @@ constructor(props){
   this.cleanSort = this.cleanSort.bind(this);
 }
 
+qualityType = {
+  'good': 'good',
+  'Bad': 'Bad',
+  'unknown': 'unknown',
+  'auto-alert': 'auto-alert'
+};
+
 stylingID = (cell, row, ridx, cidx) => {
     console.log('current row  ', row);
     console.log('current cell  ', cell);
@@ -93,6 +100,19 @@ customSortStyle = (order, dataField) => {
     });
   }
 
+  priceFormatter(cell, row) {
+  return `<i class='glyphicon glyphicon-usd'></i> ${cell}`;
+}
+
+//this way only filter data, but dont show in filter
+handleTextFilterBtnClick = () => {
+    this.refs.propTab.handleFilterData({ key: 'auto' });
+  }
+
+  handleTextFiilterBtnClick = () => {
+    this.refs.keyCol.applyFilter('auto');
+  }
+
   render() {
     // console.log('data:', this.state.properties);
     const options = {
@@ -113,6 +133,7 @@ customSortStyle = (order, dataField) => {
       <React.Fragment>
       <button onClick={ this.handleBtnClick }>Sort Property Key</button>
       <button className='btn ben-default' onClick={ this.cleanSort }>Clean</button>
+      <button onClick={ this.handleTextFiilterBtnClick } className='btn btn-default'>Click to apply text filter</button>
        <p style={ { color: 'red' } }>sort: sortName={ this.state.sortName }, sortOrder={ this.state.sortOrder }</p>
       <BootstrapTable
       ref='propTab'
@@ -133,6 +154,7 @@ customSortStyle = (order, dataField) => {
           columnTitle={ this.customTitle }
           headerTitle={ false }
           tdAttr={ tdAttr }
+          dataFormat={ this.priceFormatter }
           // columnTitle={ true } // shows the column value as title on element hover
           // hidden={ true }
           // columnTitle='Hard code string'
@@ -141,11 +163,17 @@ customSortStyle = (order, dataField) => {
           <TableHeaderColumn
           dataSort={ true }
           sortHeaderColumnClassName={ this.customSortStyle }
+          // possible filter options defaultValue: '0',condition: 'eq',
+          // filter={ { type: 'TextFilter', delay: 1000 } }
+          filter={ { type: 'SelectFilter', options: this.qualityType, condition: 'eq',selectText: 'Choose',defaultValue: 'good' } }
+          ref='keyCol'
           dataField='key'>Property Name</TableHeaderColumn>
           <TableHeaderColumn
           dataSort={ true }
           sortFunc={ this.revertSortFunc }
           sortHeaderColumnClassName='sorting'
+          // Eg: [.]{1} to find string having '.' , [0] to find string contain 0
+          filter={ { type: 'RegexFilter', delay: 1000 } }
           dataField='value'>Property Value</TableHeaderColumn>
       </BootstrapTable>
       </React.Fragment>
