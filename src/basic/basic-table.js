@@ -2,8 +2,8 @@
 import React from 'react';
 import BootstrapTable from '../bootstraptable/BootstrapTable';
 import TableHeaderColumn from '../bootstraptable/TableHeaderColumn';
+import '../css/style.css';
 
-let order = 'desc';
 export default class BasicTable extends React.Component {
 
 constructor(props){
@@ -11,8 +11,8 @@ constructor(props){
   this.state = {
     devName : 'kesav',
     order : 'desc',
-    sortName: undefined,
-    sortOrder: undefined
+    sortName: [],
+    sortOrder: []
   }
 
   fetch('../propertieslimited.json')
@@ -24,6 +24,7 @@ constructor(props){
   })
 
   this.onSortChange = this.onSortChange.bind(this);
+  this.cleanSort = this.cleanSort.bind(this);
 }
 
 stylingID = (cell, row, ridx, cidx) => {
@@ -38,6 +39,23 @@ stylingID = (cell, row, ridx, cidx) => {
     return `${row.key} for ${cell}`;
   }
 
+  revertSortFunc(a, b, order) {   // order is desc or asc
+    console.log(order)
+  if (order === 'desc') {
+    return a.price - b.price;
+  } else {
+    return b.price - a.price;
+  }
+}
+
+customSortStyle = (order, dataField) => {
+  console.log('734y55t9',dataField);
+    if (order === 'desc') {
+      return 'sort-desc';
+    }
+    return 'sort-asc';
+  }
+
   handleBtnClick = () => {
     console.log('fgfdg',this.state.order)
     if (this.state.order === 'desc') {
@@ -49,11 +67,29 @@ stylingID = (cell, row, ridx, cidx) => {
     }
   }
 
-  onSortChange (sortName, sortOrder) {
+  onSortChange (key, order) {
     console.info('onSortChange', arguments);
+    const sortName = [];
+    const sortOrder = [];
+    for (let i = 0; i < this.state.sortName.length; i++) {
+      if (this.state.sortName[i] !== key) {
+        sortName.push(this.state.sortName[i]);
+        sortOrder.push(this.state.sortOrder[i]);
+      }
+    }
+
+    sortName.push(key);
+    sortOrder.push(order);
     this.setState({
       sortName,
       sortOrder
+    });
+  }
+
+  cleanSort() {
+    this.setState({
+      sortName: [],
+      sortOrder: []
     });
   }
 
@@ -76,6 +112,7 @@ stylingID = (cell, row, ridx, cidx) => {
     return (
       <React.Fragment>
       <button onClick={ this.handleBtnClick }>Sort Property Key</button>
+      <button className='btn ben-default' onClick={ this.cleanSort }>Clean</button>
        <p style={ { color: 'red' } }>sort: sortName={ this.state.sortName }, sortOrder={ this.state.sortOrder }</p>
       <BootstrapTable
       ref='propTab'
@@ -103,8 +140,13 @@ stylingID = (cell, row, ridx, cidx) => {
           isKey={ true }>Product ID</TableHeaderColumn>
           <TableHeaderColumn
           dataSort={ true }
+          sortHeaderColumnClassName={ this.customSortStyle }
           dataField='key'>Property Name</TableHeaderColumn>
-          <TableHeaderColumn dataField='value'>Property Key</TableHeaderColumn>
+          <TableHeaderColumn
+          dataSort={ true }
+          sortFunc={ this.revertSortFunc }
+          sortHeaderColumnClassName='sorting'
+          dataField='value'>Property Value</TableHeaderColumn>
       </BootstrapTable>
       </React.Fragment>
     );
