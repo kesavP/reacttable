@@ -2,7 +2,27 @@
 import React from 'react';
 import BootstrapTable from '../bootstraptable/BootstrapTable';
 import TableHeaderColumn from '../bootstraptable/TableHeaderColumn';
-import '../css/style.css';
+import ReactDOM from 'react-dom';
+require ('../css/style.css');
+require('../css/customMultiSelect.css');
+
+class Checkbox extends React.Component {
+  componentDidMount() { this.update(this.props.checked); }
+  componentWillReceiveProps(props) { this.update(props.checked); }
+  update(checked) {
+    ReactDOM.findDOMNode(this).indeterminate = checked === 'indeterminate';
+  }
+  render() {
+    return (
+      <input className='react-bs-select-all'
+        type='checkbox'
+        name={ 'checkbox' + this.props.rowIndex }
+        id={ 'checkbox' + this.props.rowIndex }
+        checked={ this.props.checked }
+        onChange={ this.props.onChange } />
+    );
+  }
+}
 
 export default class BasicTable extends React.Component {
 
@@ -12,7 +32,8 @@ constructor(props){
     devName : 'kesav',
     order : 'desc',
     sortName: [],
-    sortOrder: []
+    sortOrder: [],
+    selected: []
   }
 
   fetch('../propertieslimited.json')
@@ -25,7 +46,42 @@ constructor(props){
 
   this.onSortChange = this.onSortChange.bind(this);
   this.cleanSort = this.cleanSort.bind(this);
+  this.selectedRowClass = this.selectedRowClass .bind(this);
 }
+
+onRowSelect(row, isSelected, e, rowIndex) {
+  let rowStr = '';
+  for (const prop in row) {
+    rowStr += prop + ': "' + row[prop] + '"';
+  }
+  console.log(e);
+  alert(`Selected: ${isSelected}, rowIndex: ${rowIndex}, row: ${rowStr}`);
+}
+
+onSelectAll(isSelected, rows) {
+  alert(`is select all: ${isSelected}`);
+  if (isSelected) {
+    alert('Current display and selected data: ');
+  } else {
+    alert('unselect rows: ');
+  }
+  for (let i = 0; i < rows.length; i++) {
+    alert(rows[i].id);
+  }
+}
+
+selectedRowClass(row, isSelect) {
+  console.log('roe id ',row.id);
+    if (isSelect) {
+      if (row.id >= 3) {
+        return 'bigger-than-three-select-row';
+      } else {
+        return 'less-than-three-select-row';
+      }
+    } else {
+      return '';
+    }
+  }
 
 qualityType = {
   'good': 'good',
@@ -93,6 +149,14 @@ customSortStyle = (order, dataField) => {
     });
   }
 
+  sizePerPageListChange(sizePerPage) {
+    alert(`sizePerPage: ${sizePerPage}`);
+  }
+
+  onPageChange(page, sizePerPage) {
+    alert(`page: ${page}, sizePerPage: ${sizePerPage}`);
+  }
+
   cleanSort() {
     this.setState({
       sortName: [],
@@ -113,6 +177,41 @@ handleTextFilterBtnClick = () => {
     this.refs.keyCol.applyFilter('auto');
   }
 
+  multiSelectCustomised = (props) => {
+    const { type, checked, disabled, onChange, rowIndex } = props;
+    console.log('selectedRow '+rowIndex);
+    return (
+        <div className='checkbox-personalized'>
+          <Checkbox {...props}/>
+          <label htmlFor={ 'checkbox' + rowIndex }>
+            <div className='check'></div>
+          </label>
+        </div>
+      );
+  }
+
+  selectRowProp = {
+    // radio return single-select.
+  mode: 'checkbox',
+  customComponent: this.multiSelectCustomised,
+//  unselectable: [ 3 ] ,// give rowkeys for unselectable row, comment-out custom component prop, to take this effect
+  selected: [ 2 ],  // give a array which contain the row key you want to select // give a array which contain the row key you want to select.
+  //bgColor: 'grey' // this style applied on row click
+ //  bgColor: function(row, isSelect) { // this add backgroud to style element
+ //   if (isSelect) {
+ //     const { id } = row;
+ //     if (id < 2) return 'blue';
+ //     else if (id < 4) return 'red';
+ //     else return 'yellow';
+ //   }
+ //   return null;
+ // }
+ className: this.selectedRowClass,  // add custom class on click
+ onSelect: this.onRowSelect,
+  onSelectAll: this.onSelectAll,
+  showOnlySelected: true // button a top to show only selected checkbox rows
+};
+
   render() {
     // console.log('data:', this.state.properties);
     const options = {
@@ -123,7 +222,31 @@ handleTextFilterBtnClick = () => {
       // defaultSortName: 'key',
       // defaultSortOrder: 'asc',
       // withoutNoDataText: true, // this will make the noDataText hidden, means only showing the table header
-    };
+      onRowClick: function(row, columnIndex, rowIndex, e) {
+    alert(`You click row id: ${row.id}, column index: ${columnIndex}, row index: ${rowIndex}`);
+    console.log(e);
+  },
+  onRowDoubleClick: function(row, e) {
+    alert(`You double click row id: ${row.id}`);
+    console.log(e);
+  },
+  // prePage: <i className='glyphicon glyphicon-chevron-left' />,
+  // nextPage: <i className='glyphicon glyphicon-chevron-right' />,
+  // firstPage: <i className='glyphicon glyphicon-step-backward' />,
+  // lastPage: <i className='glyphicon glyphicon-step-forward' />
+  // pageStartIndex: 0, // where to start counting the pages
+// paginationSize: 3,  // the pagination bar size.
+prePage: 'Prev', // Previous page button text
+nextPage: 'Next', // Next page button text
+firstPage: 'First', // First page button text
+lastPage: 'Last', // Last page button text
+prePageTitle: 'Go to previous', // Previous page button title
+nextPageTitle: 'Go to next', // Next page button title
+firstPageTitle: 'Go to first', // First page button title
+lastPageTitle: 'Go to Last', // Last page button title
+onPageChange: this.onPageChange,
+onSizePerPageList: this.sizePerPageListChange
+};
 
     const tdAttr = {
       'data-attr1': 'value1',
@@ -143,13 +266,15 @@ handleTextFilterBtnClick = () => {
       striped={ true }
       hover={ true }
       condensed={ true }
+      selectRow={ this.selectRowProp }
       // bordered={ false }
       height='250'
       scrollTop={ 'Bottom' }
+      pagination
       >
           <TableHeaderColumn dataField='id'
           dataAlign='center'
-          tdStyle={ this.stylingID }
+          // tdStyle={ this.stylingID }
           thStyle={ { 'fontWeight': 'lighter' } }
           columnTitle={ this.customTitle }
           headerTitle={ false }
@@ -165,7 +290,7 @@ handleTextFilterBtnClick = () => {
           sortHeaderColumnClassName={ this.customSortStyle }
           // possible filter options defaultValue: '0',condition: 'eq',
           // filter={ { type: 'TextFilter', delay: 1000 } }
-          filter={ { type: 'SelectFilter', options: this.qualityType, condition: 'eq',selectText: 'Choose',defaultValue: 'good' } }
+          filter={ { type: 'SelectFilter', options: this.qualityType, condition: 'eq',selectText: 'Choose',defaultValue: 'auto-alert' } }
           ref='keyCol'
           dataField='key'>Property Name</TableHeaderColumn>
           <TableHeaderColumn
