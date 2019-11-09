@@ -285,6 +285,46 @@ cellEditProp = {
   afterSaveCell: this.onAfterSaveCell  // a hook for after saving cell
 };
 
+trClassFormat(rowData, rIndex) {
+  return rIndex % 3 === 0 ? 'tr-function-example' : '';
+}
+
+propertiesValueValidator(value) {
+  const nan = isNaN(parseInt(value, 10));
+  if (nan) {
+    return 'Job Status must be a integer!';
+  }
+  return true;
+}
+
+propertiesKeyValidator(value, row) {
+  const response = { isValid: true, notification: { type: 'success', msg: '', title: '' } };
+  if (!value) {
+    response.isValid = false;
+    response.notification.type = 'error';
+    response.notification.msg = 'Value must be inserted';
+    response.notification.title = 'Requested Value';
+  } else if (value.length < 10) {
+    response.isValid = false;
+    response.notification.type = 'error';
+    response.notification.msg = 'Value must have 10+ characters';
+    response.notification.title = 'Invalid Value';
+  }
+  return response;
+}
+
+handleAddRowWithASyncError = (row, colInfo, errorCallback) => {
+    // Use setTimeout to perform a async operation
+    setTimeout(() => {
+      // Force to return an error message anyway.
+      errorCallback('Sorry, There\'s some error happend');
+    }, 5000);
+    // return false to tell react-bootstrap-table to handle this operation as async
+    // react-bootstrap-table will wait errorCallback be called.
+    return false;
+  }
+
+
   render() {
     // console.log('data:', this.state.properties);
     const options = {
@@ -330,7 +370,8 @@ exportCSVText: 'my_export',
   deleteText: 'my_delete',
   saveText: 'my_save',
   closeText: 'my_close',
-  handleConfirmDeleteRow: this.customConfirm
+  handleConfirmDeleteRow: this.customConfirm,
+  // onAddRow: this.handleAddRowWithASyncError // this to give a error message on row add
 };
 
     const tdAttr = {
@@ -359,13 +400,22 @@ exportCSVText: 'my_export',
       insertRow={ true }
       deleteRow={ true }
       multiColumnSearch={ true }
-      cellEdit={ this.cellEditProp }
+        cellEdit={ this.cellEditProp }
       searchPlaceholder='Search delay 500ms'
       //strictSearch={ true }, // if this true multi search wont function
       exportCSV={ true }
       pagination
+      tableHeaderClass='my-header-class'
+          tableBodyClass='my-body-class'
+          containerClass='my-container-class'
+          tableContainerClass='my-table-container-class'
+          headerContainerClass='my-header-container-class'
+          bodyContainerClass='my-body-container-class'
+          trClassName={ this.trClassFormat }
       >
           <TableHeaderColumn dataField='id'
+          hiddenOnInsert
+          autoValue={ true }
           dataAlign='center'
           // tdStyle={ this.stylingID }
           thStyle={ { 'fontWeight': 'lighter' } }
@@ -380,21 +430,25 @@ exportCSVText: 'my_export',
           // headerText='Custom Title'
           isKey={ true }>Product ID</TableHeaderColumn>
           <TableHeaderColumn
+          editable={ { type: 'textarea', validator: this.propertiesKeyValidator, readOnly: true } }
           dataSort={ true }
           sortHeaderColumnClassName={ this.customSortStyle }
           // possible filter options defaultValue: '0',condition: 'eq',
           // filter={ { type: 'TextFilter', delay: 1000 } }
           filter={ { type: 'SelectFilter', options: this.qualityType, condition: 'eq',selectText: 'Choose',defaultValue: 'auto-alert' } }
           ref='keyCol'
+          editColumnClassName='class-for-editing-cell'
           dataField='key'>Property Name</TableHeaderColumn>
           <TableHeaderColumn
           // dataFormat={ this.nameFormatter }
-          editable={ false }
+          // editable={ false }
+          editable={ { validator: this.propertiesValueValidator } }
           dataSort={ true }
           sortFunc={ this.revertSortFunc }
           sortHeaderColumnClassName='sorting'
           // Eg: [.]{1} to find string having '.' , [0] to find string contain 0
           filter={ { type: 'RegexFilter', delay: 1000 } }
+          columnClassName='td-column-string-example'
           dataField='value'>Property Value</TableHeaderColumn>
       </BootstrapTable>
       </React.Fragment>
