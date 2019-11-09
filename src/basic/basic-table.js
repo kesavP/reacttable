@@ -1,4 +1,6 @@
 /* eslint max-len: 0 */
+/*global event*/
+/*eslint no-restricted-globals: ["error", "event"]*/
 import React from 'react';
 import BootstrapTable from '../bootstraptable/BootstrapTable';
 import TableHeaderColumn from '../bootstraptable/TableHeaderColumn';
@@ -111,6 +113,10 @@ stylingID = (cell, row, ridx, cidx) => {
   }
 }
 
+onAfterDeleteRow(rowKeys, rows) {
+  alert('The rowkey you drop: ' + rowKeys);
+}
+
 customSortStyle = (order, dataField) => {
   console.log('734y55t9',dataField);
     if (order === 'desc') {
@@ -164,8 +170,13 @@ customSortStyle = (order, dataField) => {
     });
   }
 
-  priceFormatter(cell, row) {
-  return `<i class='glyphicon glyphicon-usd'></i> ${cell}`;
+onAfterInsertRow(row) {
+  let newRowStr = '';
+
+  for (const prop in row) {
+    newRowStr += prop + ': ' + row[prop] + ' \n';
+  }
+  alert('The new row is:\n ' + newRowStr);
 }
 
 //this way only filter data, but dont show in filter
@@ -212,6 +223,68 @@ handleTextFilterBtnClick = () => {
   showOnlySelected: true // button a top to show only selected checkbox rows
 };
 
+afterSearch(searchText, result) {
+  console.log('Your search text is ' + searchText);
+  console.log('Result is: ' + result);
+  for (let i = 0; i < result.length; i++) {
+    console.log('Fruit: ' + result[i].id + ', ' + result[i].key + ', ' + result[i].value  );
+  }
+}
+
+filterType(cell, row) {
+  // just return type for filtering or searching.
+  return cell.type;
+}
+
+// nameFormatter(cell) {
+//   return `<p><span class='glyphicons ${cell.icon}' aria-hidden='true'></span> ${cell.pname}, from ${cell.year}</p>`;
+// }
+
+priceFormatter(cell) {
+  return `NTD ${cell}`;
+}
+
+customConfirm(next, dropRowKeys) {
+  const dropRowKeysStr = dropRowKeys.join(',');
+  if (confirm(`(It's a custom confirm)Are you sure you want to delete ${dropRowKeysStr}?`)) {
+    // If the confirmation is true, call the function that
+    // continues the deletion of the record.
+    next();
+  }
+}
+
+onBeforeSaveCell(row, cellName, cellValue) {
+  console.log("editing "+row.id+" with value "+cellValue);
+  // You can do any validation on here for editing value,
+  // return false for reject the editing
+  return true;
+}
+
+onBeforeSaveCellAsync(row, cellName, cellValue, done) {
+  // if your validation is async, for example: you want to pop a confirm dialog for user to confim
+  // in this case, react-bootstrap-table pass a callback function to you
+  // you are supposed to call this callback function with a bool value to perfom if it is valid or not
+  // in addition, you should return 1 to tell react-bootstrap-table this is a async operation.
+
+  // I use setTimeout to perform an async operation.
+  // setTimeout(() => {
+  //   done(true);  // it's ok to save :)
+  //   done(false);   // it's not ok to save :(
+  // }, 3000);
+  // return 1;  // please return 1
+}
+
+cellEditProp = {
+  mode: 'click',
+  // nonEditableRows: function() {
+  //       // if product id less than 3, will cause the whole row noneditable
+  //       // this function should return an array of row keys
+  //       return properties.filter(p => p.id < 3).map(p => p.id);
+  //     }
+  beforeSaveCell: this.onBeforeSaveCell, // a hook for before saving cell
+  afterSaveCell: this.onAfterSaveCell  // a hook for after saving cell
+};
+
   render() {
     // console.log('data:', this.state.properties);
     const options = {
@@ -222,14 +295,14 @@ handleTextFilterBtnClick = () => {
       // defaultSortName: 'key',
       // defaultSortOrder: 'asc',
       // withoutNoDataText: true, // this will make the noDataText hidden, means only showing the table header
-      onRowClick: function(row, columnIndex, rowIndex, e) {
-    alert(`You click row id: ${row.id}, column index: ${columnIndex}, row index: ${rowIndex}`);
-    console.log(e);
-  },
-  onRowDoubleClick: function(row, e) {
-    alert(`You double click row id: ${row.id}`);
-    console.log(e);
-  },
+  //     onRowClick: function(row, columnIndex, rowIndex, e) {
+  //   alert(`You click row id: ${row.id}, column index: ${columnIndex}, row index: ${rowIndex}`);
+  //   console.log(e);
+  // },
+  // onRowDoubleClick: function(row, e) {
+  //   alert(`You double click row id: ${row.id}`);
+  //   console.log(e);
+  // },
   // prePage: <i className='glyphicon glyphicon-chevron-left' />,
   // nextPage: <i className='glyphicon glyphicon-chevron-right' />,
   // firstPage: <i className='glyphicon glyphicon-step-backward' />,
@@ -245,7 +318,19 @@ nextPageTitle: 'Go to next', // Next page button title
 firstPageTitle: 'Go to first', // First page button title
 lastPageTitle: 'Go to Last', // Last page button title
 onPageChange: this.onPageChange,
-onSizePerPageList: this.sizePerPageListChange
+onSizePerPageList: this.sizePerPageListChange,
+afterInsertRow: this.onAfterInsertRow,
+afterDeleteRow: this.onAfterDeleteRow,
+afterSearch: this.afterSearch,  // define a after search hook
+searchDelayTime: 3000,
+//defaultSearch: 'banana', // search the default
+exportCSVSeparator: '##',
+exportCSVText: 'my_export',
+  insertText: 'my_insert',
+  deleteText: 'my_delete',
+  saveText: 'my_save',
+  closeText: 'my_close',
+  handleConfirmDeleteRow: this.customConfirm
 };
 
     const tdAttr = {
@@ -267,9 +352,17 @@ onSizePerPageList: this.sizePerPageListChange
       hover={ true }
       condensed={ true }
       selectRow={ this.selectRowProp }
+      search={ true }
       // bordered={ false }
       height='250'
       scrollTop={ 'Bottom' }
+      insertRow={ true }
+      deleteRow={ true }
+      multiColumnSearch={ true }
+      cellEdit={ this.cellEditProp }
+      searchPlaceholder='Search delay 500ms'
+      //strictSearch={ true }, // if this true multi search wont function
+      exportCSV={ true }
       pagination
       >
           <TableHeaderColumn dataField='id'
@@ -280,6 +373,7 @@ onSizePerPageList: this.sizePerPageListChange
           headerTitle={ false }
           tdAttr={ tdAttr }
           dataFormat={ this.priceFormatter }
+          searchable={ false } // donot search this column
           // columnTitle={ true } // shows the column value as title on element hover
           // hidden={ true }
           // columnTitle='Hard code string'
@@ -294,6 +388,8 @@ onSizePerPageList: this.sizePerPageListChange
           ref='keyCol'
           dataField='key'>Property Name</TableHeaderColumn>
           <TableHeaderColumn
+          // dataFormat={ this.nameFormatter }
+          editable={ false }
           dataSort={ true }
           sortFunc={ this.revertSortFunc }
           sortHeaderColumnClassName='sorting'

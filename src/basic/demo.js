@@ -20,6 +20,10 @@ class Demo extends React.Component {
           { renderLinks('ekjlfnkl basic/basic-table.js') }
           <BasicTable rowsize={5}/>
         </Panel>
+        <Panel header={ 'A basic react-bootstrap-table' }>
+          { renderLinks('ekjlfnkl basic/basic-table.js') }
+          <HoverStripedTable />
+        </Panel>
       </Col>
     );
   }
