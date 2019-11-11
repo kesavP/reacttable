@@ -3,6 +3,7 @@ import React from 'react';
 import BasicTable from './basic-table';
 import SingleColumnTable from './single-column-table';
 import HoverStripedTable from './hover-striped-table';
+import ExpandRow from './expandRow';
 import BorderlessTable from './borderless-table';
 import ScrollTable from './scroll-table';
 import LargeColumnTable from './large-column-table';
@@ -23,6 +24,10 @@ class Demo extends React.Component {
         <Panel header={ 'A basic react-bootstrap-table' }>
           { renderLinks('ekjlfnkl basic/basic-table.js') }
           <HoverStripedTable />
+        </Panel>
+        <Panel header={ 'A expand row react-bootstrap-table' }>
+          { renderLinks('ekjlfnkl basic/basic-table.js') }
+          <ExpandRow />
         </Panel>
       </Col>
     );

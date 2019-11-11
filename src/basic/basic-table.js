@@ -26,6 +26,15 @@ class Checkbox extends React.Component {
   }
 }
 
+class BSTable extends React.Component {
+  render() {
+    console.log('fkjnsvlhrlksfjlo;kewj;lfkjl;werjk;lrfjl;kewjlok ',this.props.data);
+      return (
+        <h1>Show MEE</h1>
+        );
+    }
+    }
+
 export default class BasicTable extends React.Component {
 
 constructor(props){
@@ -35,7 +44,18 @@ constructor(props){
     order : 'desc',
     sortName: [],
     sortOrder: [],
-    selected: []
+    selected: [],
+    expand: [ {
+      fieldA: 'test1',
+      fieldB: (1 + 1) * 99,
+      fieldC: (1 + 1) * Math.random() * 100,
+      fieldD: '123eedd' + 1
+    }, {
+      fieldA: 'test2',
+      fieldB: 2 * 99,
+      fieldC: 2 * Math.random() * 100,
+      fieldD: '123eedd' + 2
+    } ]
   }
 
   fetch('../propertieslimited.json')
@@ -285,6 +305,11 @@ cellEditProp = {
   afterSaveCell: this.onAfterSaveCell  // a hook for after saving cell
 };
 
+keyBoardNavProp = {
+      enterToEdit: true,
+      enterToSelect: true
+    };
+
 trClassFormat(rowData, rIndex) {
   return rIndex % 3 === 0 ? 'tr-function-example' : '';
 }
@@ -322,6 +347,18 @@ handleAddRowWithASyncError = (row, colInfo, errorCallback) => {
     // return false to tell react-bootstrap-table to handle this operation as async
     // react-bootstrap-table will wait errorCallback be called.
     return false;
+  }
+
+  isExpandableRow(row) {
+    console.log('dhnvkijdcv ',row.id)
+    if (row.id < 3) return true;
+    else return false;
+  }
+
+  expandComponent(row) {
+    return (
+      <BSTable data={'heikjh'} />
+    );
   }
 
 
@@ -371,6 +408,9 @@ exportCSVText: 'my_export',
   saveText: 'my_save',
   closeText: 'my_close',
   handleConfirmDeleteRow: this.customConfirm,
+  expandRowBgColor: 'rgb(242, 255, 163)',
+  expandAll: true,
+  // onlyOneExpanding: true, // only one row expand
   // onAddRow: this.handleAddRowWithASyncError // this to give a error message on row add
 };
 
@@ -388,11 +428,15 @@ exportCSVText: 'my_export',
       ref='propTab'
       multiColumnSort={ 2 } // this to be verified
       data={ this.state.properties }
+      keyBoardNav
       options={ options }
       striped={ true }
       hover={ true }
       condensed={ true }
       selectRow={ this.selectRowProp }
+      expandableRow={ this.isExpandableRow }
+      expandComponent={ this.expandComponent }
+      expandColumnOptions={ { expandColumnVisible: true } }
       search={ true }
       // bordered={ false }
       height='250'
@@ -401,6 +445,7 @@ exportCSVText: 'my_export',
       deleteRow={ true }
       multiColumnSearch={ true }
         cellEdit={ this.cellEditProp }
+        keyBoardNav={ this.keyBoardNavProp }
       searchPlaceholder='Search delay 500ms'
       //strictSearch={ true }, // if this true multi search wont function
       exportCSV={ true }
